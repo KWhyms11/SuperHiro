@@ -51,7 +51,7 @@ SourceArt/**/*.tga
 Binaries/*
 
 # Builds
-Build/*
+
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
