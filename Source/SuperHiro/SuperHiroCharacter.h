@@ -61,6 +61,7 @@ protected:
 
 	void FlyUp(float f);
 
+	void LaserEyes();
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

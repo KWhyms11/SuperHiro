@@ -55,9 +55,11 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASuperHiroCharacter::FlyJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("LaserEyes", IE_Pressed, this, &ASuperHiroCharacter::LaserEyes);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASuperHiroCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASuperHiroCharacter::MoveRight);
+	
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -69,7 +71,7 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 	PlayerInputComponent->BindAxis("FlyAscend", this, &ASuperHiroCharacter::FlyUp);
 	PlayerInputComponent->BindAxis("FlyDescend", this, &ASuperHiroCharacter::FlyUp);
-
+	
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASuperHiroCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ASuperHiroCharacter::TouchStopped);
@@ -169,6 +171,29 @@ void ASuperHiroCharacter::FlyUp(float f) {
 		AddMovementInput(Direction, f);
 	}
 	
+}
+
+void ASuperHiroCharacter::LaserEyes() {
+	FRotator ControlRot = this->GetActorRotation();
+	FVector Start = GetActorLocation() + FVector(0,0,60);
+	FVector End = (ControlRot.Vector() * 1000.0f) + Start;
+	 
+	FHitResult* Hit = new FHitResult;
+	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
+	FCollisionResponseParams* CRParams = new FCollisionResponseParams;
+
+	UWorld* world = GetWorld();
+
+	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+		End = Hit->Location;
+
+		USceneComponent* HitActor = Hit->GetComponent();
+		HitActor->DestroyComponent();
+
+		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, HitActor->GetName());
+	}
+
+	DrawDebugLine(world, Start, End, FColor::Red, false, 1.0f, 0.0f, 2.0f);
 }
 
 void ASuperHiroCharacter::LookTrace() {
