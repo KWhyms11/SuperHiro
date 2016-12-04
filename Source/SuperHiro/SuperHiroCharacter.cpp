@@ -43,6 +43,7 @@ ASuperHiroCharacter::ASuperHiroCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	bIsRunning = false;
+	bIsAiming = false;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -59,10 +60,17 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("LaserEyes", IE_Pressed, this, &ASuperHiroCharacter::LaserEyes);
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASuperHiroCharacter::ToggleSprint);
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ASuperHiroCharacter::ToggleAimOn);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ASuperHiroCharacter::ToggleAimOff);
+	PlayerInputComponent->BindAction("RT", IE_Pressed, this, &ASuperHiroCharacter::ToggleAltAimOn);
+	PlayerInputComponent->BindAction("RT", IE_Released, this, &ASuperHiroCharacter::ToggleAltAimOff);
+	PlayerInputComponent->BindAction("RT", IE_Pressed, this, &ASuperHiroCharacter::RTAction);
+	PlayerInputComponent->BindAction("TeleThrow", IE_Pressed, this, &ASuperHiroCharacter::TeleThrow);
+
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASuperHiroCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASuperHiroCharacter::MoveRight);
-	
+
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -74,7 +82,7 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 	PlayerInputComponent->BindAxis("FlyAscend", this, &ASuperHiroCharacter::FlyUp);
 	PlayerInputComponent->BindAxis("FlyDescend", this, &ASuperHiroCharacter::FlyUp);
-	
+
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &ASuperHiroCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &ASuperHiroCharacter::TouchStopped);
@@ -158,6 +166,30 @@ void ASuperHiroCharacter::ToggleSprint() {
 	bIsRunning = !bIsRunning;
 }
 
+void ASuperHiroCharacter::ToggleAimOn() {
+	bIsAiming = true;
+}
+
+void ASuperHiroCharacter::ToggleAimOff() {
+	bIsAiming = false;
+}
+
+void ASuperHiroCharacter::ToggleAltAimOn() {
+	if (bIsAiming) {
+		bIsAltAiming = true;
+	}
+}
+
+void ASuperHiroCharacter::ToggleAltAimOff() {
+	bIsAltAiming = false;
+}
+
+void ASuperHiroCharacter::RTAction() {
+	if (!bIsAiming) {
+		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::White, "Hello!!!");
+	}
+}
+
 void ASuperHiroCharacter::FlyJump() {
 	if (GetCharacterMovement()->IsFalling()) {
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
@@ -182,37 +214,67 @@ void ASuperHiroCharacter::FlyUp(float f) {
 		// add movement in that direction
 		AddMovementInput(Direction, f);
 	}
-	
+
 }
 
 void ASuperHiroCharacter::LaserEyes() {
 	float CamRotX = GetActorRotation().Vector().X;
 	float CamRotY = GetActorRotation().Vector().Y;
 	float ControlRot = this->GetControlRotation().Vector().Z;
-	FVector Start = GetActorLocation() + FVector(0,0,65);
-	FVector End = (FVector(CamRotX,CamRotY,ControlRot) * 5000.0f) + Start;
-	 
+	FVector Start = GetActorLocation() + FVector(0, 0, 65);
+	FVector End = (FVector(CamRotX, CamRotY, ControlRot) * 5000.0f) + Start;
+
 	FHitResult* Hit = new FHitResult;
 	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
 	FCollisionResponseParams* CRParams = new FCollisionResponseParams;
 
 	UWorld* world = GetWorld();
 
-	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
-		End = Hit->Location;
+	if (bIsAiming && !bIsAltAiming) {
+		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+			End = Hit->Location;
 
-		AActor* Actor = Hit->GetActor();
-		if (Actor == NULL) {
-			GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, "This is why you crash dumbass");
+			AActor* Actor = Hit->GetActor();
+			if (Actor == NULL) {
+				GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, "This is why you crash dumbass");
+			}
+
+			USceneComponent* HitActor = Hit->GetComponent();
+			HitActor->DestroyComponent();
 		}
 
-		USceneComponent* HitActor = Hit->GetComponent();
-		//HitActor->DestroyComponent();
-
-		
+		DrawDebugLine(world, Start, End, FColor::Blue, false, 0.0f, 10.0f, 5.0f);
 	}
 
-	DrawDebugLine(world, Start, End, FColor::Red, false, 0.0f, 10.0f, 5.0f);
+}
+
+void ASuperHiroCharacter::TeleThrow() {
+	float CamRotX = GetActorRotation().Vector().X;
+	float CamRotY = GetActorRotation().Vector().Y;
+	float ControlRot = this->GetControlRotation().Vector().Z;
+	FVector Start = GetActorLocation() + FVector(0, 0, 65);
+	FVector End = (FVector(CamRotX, CamRotY, ControlRot) * 5000.0f) + Start;
+
+	FHitResult* Hit = new FHitResult;
+	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
+	FCollisionResponseParams* CRParams = new FCollisionResponseParams;
+
+	UWorld* world = GetWorld();
+
+	if (bIsAiming && !bIsAltAiming) {
+		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+			End = Hit->Location;
+
+			AActor* Actor = Hit->GetActor();
+
+			if (Actor != NULL) {
+				UStaticMeshComponent* SM = Cast<UStaticMeshComponent>(Actor->GetRootComponent());
+				SM->AddImpulse(End * 5000.0f); // The float determines how hard you throw
+			}
+		}
+
+		DrawDebugLine(world, Start, End, FColor::Yellow, false, 0.0f, 10.0f, 5.0f);
+	}
 }
 
 void ASuperHiroCharacter::LookTrace() {
@@ -231,7 +293,7 @@ void ASuperHiroCharacter::LookTrace() {
 
 		AActor* Actor = Hit->GetActor();
 
-		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Yellow,Actor->GetName());
+		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Yellow, Actor->GetName());
 
 	}
 

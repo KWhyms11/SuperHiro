@@ -27,6 +27,8 @@ public:
 	float BaseLookUpRate;
 
 	bool bIsRunning;
+	bool bIsAiming;
+	bool bIsAltAiming;
 
 protected:
 
@@ -40,6 +42,16 @@ protected:
 	void MoveRight(float Value);
 
 	void ToggleSprint();
+
+	void ToggleAimOn();
+
+	void ToggleAimOff();
+
+	void ToggleAltAimOn();
+
+	void ToggleAltAimOff();
+
+	void RTAction();
 
 	/** 
 	 * Called via input to turn at a given rate. 
@@ -66,6 +78,8 @@ protected:
 	void FlyUp(float f);
 
 	void LaserEyes();
+
+	void TeleThrow();
 
 protected:
 	// APawn interface
