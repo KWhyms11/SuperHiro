@@ -42,6 +42,8 @@ ASuperHiroCharacter::ASuperHiroCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	bIsRunning = false;
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -56,6 +58,7 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASuperHiroCharacter::FlyJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("LaserEyes", IE_Pressed, this, &ASuperHiroCharacter::LaserEyes);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASuperHiroCharacter::ToggleSprint);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASuperHiroCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASuperHiroCharacter::MoveRight);
@@ -121,6 +124,11 @@ void ASuperHiroCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
+		if (bIsRunning) {
+			Value = Value * 5000;
+		}
+
+		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Red, "Is Running? : " + FString::FromInt(Value));
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -144,6 +152,10 @@ void ASuperHiroCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void ASuperHiroCharacter::ToggleSprint() {
+	bIsRunning = !bIsRunning;
 }
 
 void ASuperHiroCharacter::FlyJump() {
@@ -174,9 +186,11 @@ void ASuperHiroCharacter::FlyUp(float f) {
 }
 
 void ASuperHiroCharacter::LaserEyes() {
-	FRotator ControlRot = this->GetActorRotation();
-	FVector Start = GetActorLocation() + FVector(0,0,60);
-	FVector End = (ControlRot.Vector() * 1000.0f) + Start;
+	float CamRotX = GetActorRotation().Vector().X;
+	float CamRotY = GetActorRotation().Vector().Y;
+	float ControlRot = this->GetControlRotation().Vector().Z;
+	FVector Start = GetActorLocation() + FVector(0,0,65);
+	FVector End = (FVector(CamRotX,CamRotY,ControlRot) * 5000.0f) + Start;
 	 
 	FHitResult* Hit = new FHitResult;
 	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
@@ -187,13 +201,18 @@ void ASuperHiroCharacter::LaserEyes() {
 	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
 		End = Hit->Location;
 
-		USceneComponent* HitActor = Hit->GetComponent();
-		HitActor->DestroyComponent();
+		AActor* Actor = Hit->GetActor();
+		if (Actor == NULL) {
+			GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, "This is why you crash dumbass");
+		}
 
-		GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, HitActor->GetName());
+		USceneComponent* HitActor = Hit->GetComponent();
+		//HitActor->DestroyComponent();
+
+		
 	}
 
-	DrawDebugLine(world, Start, End, FColor::Red, false, 1.0f, 0.0f, 2.0f);
+	DrawDebugLine(world, Start, End, FColor::Red, false, 0.0f, 10.0f, 5.0f);
 }
 
 void ASuperHiroCharacter::LookTrace() {
@@ -209,6 +228,11 @@ void ASuperHiroCharacter::LookTrace() {
 
 	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
 		End = Hit->Location;
+
+		AActor* Actor = Hit->GetActor();
+
+		GEngine->AddOnScreenDebugMessage(-1,-1,FColor::Yellow,Actor->GetName());
+
 	}
 
 	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
