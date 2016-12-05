@@ -235,12 +235,13 @@ void ASuperHiroCharacter::LaserEyes() {
 			End = Hit->Location;
 
 			AActor* Actor = Hit->GetActor();
-			if (Actor == NULL) {
-				GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Green, "This is why you crash dumbass");
+			if (Actor != NULL) {
+				Actor->Destroy();
 			}
 
-			USceneComponent* HitActor = Hit->GetComponent();
-			HitActor->DestroyComponent();
+			//HitActor->DestroyComponent();
+			
+			
 		}
 
 		DrawDebugLine(world, Start, End, FColor::Blue, false, 0.0f, 10.0f, 5.0f);
