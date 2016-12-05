@@ -292,8 +292,10 @@ void ASuperHiroCharacter::LookTrace() {
 		End = Hit->Location;
 
 		AActor* Actor = Hit->GetActor();
+		if (!Actor == NULL) {
+			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Yellow, Actor->GetName());
+		}
 
-		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Yellow, Actor->GetName());
 
 	}
 
