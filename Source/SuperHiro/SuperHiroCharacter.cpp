@@ -300,5 +300,5 @@ void ASuperHiroCharacter::LookTrace() {
 
 	}
 
-	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
+	//	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
 }
