@@ -9,10 +9,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ASuperHiroCharacter
 
-
-
-ASuperHiroCharacter::ASuperHiroCharacter()
-{
+ASuperHiroCharacter::ASuperHiroCharacter() {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -52,8 +49,7 @@ ASuperHiroCharacter::ASuperHiroCharacter()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
+void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASuperHiroCharacter::FlyJump);
@@ -67,10 +63,8 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("RT", IE_Pressed, this, &ASuperHiroCharacter::RTAction);
 	PlayerInputComponent->BindAction("TeleThrow", IE_Pressed, this, &ASuperHiroCharacter::TeleThrow);
 
-
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASuperHiroCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASuperHiroCharacter::MoveRight);
-
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -92,51 +86,43 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 }
 
 
-void ASuperHiroCharacter::OnResetVR()
-{
+void ASuperHiroCharacter::OnResetVR() {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void ASuperHiroCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
+void ASuperHiroCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location) {
 	// jump, but only on the first touch
-	if (FingerIndex == ETouchIndex::Touch1)
-	{
+	if (FingerIndex == ETouchIndex::Touch1) {
 		Jump();
 	}
 }
 
-void ASuperHiroCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	if (FingerIndex == ETouchIndex::Touch1)
-	{
+void ASuperHiroCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location) {
+	if (FingerIndex == ETouchIndex::Touch1) {
 		StopJumping();
 	}
 }
 
-void ASuperHiroCharacter::TurnAtRate(float Rate)
-{
+void ASuperHiroCharacter::TurnAtRate(float Rate) {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 	LookTrace();
 }
 
-void ASuperHiroCharacter::LookUpAtRate(float Rate)
-{
+void ASuperHiroCharacter::LookUpAtRate(float Rate) {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 	LookTrace();
 }
 
-void ASuperHiroCharacter::MoveForward(float Value)
-{
-	if ((Controller != NULL) && (Value != 0.0f))
-	{
+void ASuperHiroCharacter::MoveForward(float Value) {
+	if ((Controller != NULL) && (Value != 0.0f)) {
 		if (bIsRunning) {
 			Value = Value * 5000;
 		}
 
 		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Red, "Is Running? : " + FString::FromInt(Value));
+
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -147,16 +133,15 @@ void ASuperHiroCharacter::MoveForward(float Value)
 	}
 }
 
-void ASuperHiroCharacter::MoveRight(float Value)
-{
-	if ((Controller != NULL) && (Value != 0.0f))
-	{
+void ASuperHiroCharacter::MoveRight(float Value) {
+	if ((Controller != NULL) && (Value != 0.0f)) {
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get right vector 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
 	}
@@ -211,6 +196,7 @@ void ASuperHiroCharacter::FlyUp(float f) {
 		const FRotator Rotation = GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Z);
+
 		// add movement in that direction
 		AddMovementInput(Direction, f);
 	}
@@ -238,21 +224,21 @@ void ASuperHiroCharacter::LaserEyes() {
 			if (Actor != NULL) {
 				Actor->Destroy();
 			}
-
-			//HitActor->DestroyComponent();
-			
-			
 		}
 
 		DrawDebugLine(world, Start, End, FColor::Blue, false, 0.0f, 10.0f, 5.0f);
 	}
 
+	delete Hit;
+	delete CRParams;
+	delete CQParams;
 }
 
 void ASuperHiroCharacter::TeleThrow() {
 	float CamRotX = GetActorRotation().Vector().X;
 	float CamRotY = GetActorRotation().Vector().Y;
 	float ControlRot = this->GetControlRotation().Vector().Z;
+
 	FVector Start = GetActorLocation() + FVector(0, 0, 65);
 	FVector End = (FVector(CamRotX, CamRotY, ControlRot) * 5000.0f) + Start;
 
@@ -276,6 +262,10 @@ void ASuperHiroCharacter::TeleThrow() {
 
 		DrawDebugLine(world, Start, End, FColor::Yellow, false, 0.0f, 10.0f, 5.0f);
 	}
+
+	delete Hit;
+	delete CRParams;
+	delete CQParams;
 }
 
 void ASuperHiroCharacter::LookTrace() {
@@ -294,11 +284,13 @@ void ASuperHiroCharacter::LookTrace() {
 
 		AActor* Actor = Hit->GetActor();
 		if (!Actor == NULL) {
-			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Yellow, Actor->GetName());
+			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Green, Actor->GetName());
 		}
-
-
 	}
 
-	//	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
+	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
+
+	delete Hit;
+	delete CRParams;
+	delete CQParams;
 }
