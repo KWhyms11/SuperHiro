@@ -225,8 +225,6 @@ void ASuperHiroCharacter::LaserEyes() {
 				Actor->Destroy();
 			}
 		}
-
-		DrawDebugLine(world, Start, End, FColor::Blue, false, 0.0f, 10.0f, 5.0f);
 	}
 
 	delete Hit;
@@ -256,11 +254,9 @@ void ASuperHiroCharacter::TeleThrow() {
 
 			if (Actor != NULL && !Actor->GetName().Contains("Landscape")) {
 				UStaticMeshComponent* SM = Cast<UStaticMeshComponent>(Actor->GetRootComponent());
-				SM->AddImpulse(End * 50.0f); // The float determines how hard you throw
+				SM->AddImpulse(End * GetActorForwardVector() * 200.0f); // The float determines how hard you throw
 			}
 		}
-
-		DrawDebugLine(world, Start, End, FColor::Yellow, false, 0.0f, 10.0f, 5.0f);
 	}
 
 	delete Hit;
@@ -283,12 +279,10 @@ void ASuperHiroCharacter::LookTrace() {
 		End = Hit->Location;
 
 		AActor* Actor = Hit->GetActor();
-		if (!Actor == NULL) {
+		if (!Actor == NULL && !Actor->GetName().Contains("Landscape")) {
 			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Green, Actor->GetName());
 		}
 	}
-
-	DrawDebugLine(world, Start, End, FColor::Green, true, 2.0f, 1.0f, 2.0f);
 
 	delete Hit;
 	delete CRParams;
