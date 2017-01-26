@@ -221,7 +221,7 @@ void ASuperHiroCharacter::LaserEyes() {
 			End = Hit->Location;
 
 			AActor* Actor = Hit->GetActor();
-			if (Actor != NULL) {
+			if (Actor != NULL && !Actor->GetName().Contains("Landscape")) {
 				Actor->Destroy();
 			}
 		}
@@ -254,9 +254,9 @@ void ASuperHiroCharacter::TeleThrow() {
 
 			AActor* Actor = Hit->GetActor();
 
-			if (Actor != NULL) {
+			if (Actor != NULL && !Actor->GetName().Contains("Landscape")) {
 				UStaticMeshComponent* SM = Cast<UStaticMeshComponent>(Actor->GetRootComponent());
-				SM->AddImpulse(End * 5000.0f); // The float determines how hard you throw
+				SM->AddImpulse(End * 50.0f); // The float determines how hard you throw
 			}
 		}
 
