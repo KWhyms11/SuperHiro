@@ -3,6 +3,7 @@
 #include "SuperHiro.h"
 #include "SuperHiroGameMode.h"
 #include "SuperHiroCharacter.h"
+#include "SuperHiroHUD.h"
 
 ASuperHiroGameMode::ASuperHiroGameMode()
 {
@@ -11,5 +12,6 @@ ASuperHiroGameMode::ASuperHiroGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+		HUDClass = ASuperHiroHUD::StaticClass();
 	}
 }
