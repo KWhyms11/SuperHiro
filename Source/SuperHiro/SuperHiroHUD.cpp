@@ -29,6 +29,13 @@ void ASuperHiroHUD::DrawHUD()
 	FCanvasTileItem TileItem(CrosshairDrawPosition, SuperHiroCrosshair->Resource, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 
-	Canvas->DrawItem(TileItem);
+	ASuperHiroCharacter* me = Cast<ASuperHiroCharacter>(GetOwningPlayerController()->GetCharacter());
+
+	if (me->bIsAiming)
+	{
+		Canvas->DrawItem(TileItem);
+	}
+	
+	
 
 }
