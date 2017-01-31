@@ -8,7 +8,7 @@
 ASuperHiroHUD::ASuperHiroHUD() 
 {
 	// Set the crosshair texture
-	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshiarTexObj(TEXT("Texture2D'/Game/ThirdPerson/Textures/Crosshair.FirstPersonCrosshair'"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> CrosshiarTexObj(TEXT("Texture2D'/Game/ThirdPerson/Textures/SuperHiroCrosshair.SuperHiroCrosshair'"));
 	SuperHiroCrosshair = CrosshiarTexObj.Object;
 }
 

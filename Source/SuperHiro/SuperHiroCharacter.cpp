@@ -9,7 +9,8 @@
 //////////////////////////////////////////////////////////////////////////
 // ASuperHiroCharacter
 
-ASuperHiroCharacter::ASuperHiroCharacter() {
+ASuperHiroCharacter::ASuperHiroCharacter()
+{
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -33,7 +34,7 @@ ASuperHiroCharacter::ASuperHiroCharacter() {
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	
+
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
@@ -49,7 +50,8 @@ ASuperHiroCharacter::ASuperHiroCharacter() {
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
+void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASuperHiroCharacter::FlyJump);
@@ -86,42 +88,52 @@ void ASuperHiroCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 }
 
 
-void ASuperHiroCharacter::OnResetVR() {
+void ASuperHiroCharacter::OnResetVR()
+{
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void ASuperHiroCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location) {
+void ASuperHiroCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
+{
 	// jump, but only on the first touch
-	if (FingerIndex == ETouchIndex::Touch1) {
+	if (FingerIndex == ETouchIndex::Touch1)
+	{
 		Jump();
 	}
 }
 
-void ASuperHiroCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location) {
-	if (FingerIndex == ETouchIndex::Touch1) {
+void ASuperHiroCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
+{
+	if (FingerIndex == ETouchIndex::Touch1)
+	{
 		StopJumping();
 	}
 }
 
-void ASuperHiroCharacter::TurnAtRate(float Rate) {
+void ASuperHiroCharacter::TurnAtRate(float Rate)
+{
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-	LookTrace();
+	//LookTrace();
 }
 
-void ASuperHiroCharacter::LookUpAtRate(float Rate) {
+void ASuperHiroCharacter::LookUpAtRate(float Rate)
+{
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-	LookTrace();
+	//LookTrace();
 }
 
-void ASuperHiroCharacter::MoveForward(float Value) {
-	if ((Controller != NULL) && (Value != 0.0f)) {
-		if (bIsRunning) {
+void ASuperHiroCharacter::MoveForward(float Value)
+{
+	if ((Controller != NULL) && (Value != 0.0f))
+	{
+		if (bIsRunning)
+		{
 			Value = Value * 5000;
 		}
 
-		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Red, "Is Running? : " + FString::FromInt(Value));
+		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Red, GetActorForwardVector().ToString());
 
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -133,8 +145,10 @@ void ASuperHiroCharacter::MoveForward(float Value) {
 	}
 }
 
-void ASuperHiroCharacter::MoveRight(float Value) {
-	if ((Controller != NULL) && (Value != 0.0f)) {
+void ASuperHiroCharacter::MoveRight(float Value)
+{
+	if ((Controller != NULL) && (Value != 0.0f))
+	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -147,52 +161,71 @@ void ASuperHiroCharacter::MoveRight(float Value) {
 	}
 }
 
-void ASuperHiroCharacter::ToggleSprint() {
+void ASuperHiroCharacter::ToggleSprint()
+{
 	bIsRunning = !bIsRunning;
 }
 
-void ASuperHiroCharacter::ToggleAimOn() {
+void ASuperHiroCharacter::ToggleAimOn()
+{
 	bIsAiming = true;
 }
 
-void ASuperHiroCharacter::ToggleAimOff() {
+void ASuperHiroCharacter::ToggleAimOff()
+{
 	bIsAiming = false;
 }
 
-void ASuperHiroCharacter::ToggleAltAimOn() {
-	if (bIsAiming) {
+void ASuperHiroCharacter::ToggleAltAimOn()
+{
+	if (bIsAiming)
+	{
 		bIsAltAiming = true;
 	}
 }
 
-void ASuperHiroCharacter::ToggleAltAimOff() {
+void ASuperHiroCharacter::ToggleAltAimOff()
+{
 	bIsAltAiming = false;
 }
 
-void ASuperHiroCharacter::RTAction() {
-	if (!bIsAiming) {
+void ASuperHiroCharacter::RTAction()
+{
+	if (!bIsAiming)
+	{
 		GEngine->AddOnScreenDebugMessage(-1, -1, FColor::White, "Hello!!!");
 	}
 }
 
-void ASuperHiroCharacter::FlyJump() {
-	if (GetCharacterMovement()->IsFalling()) {
+void ASuperHiroCharacter::FlyJump() 
+{
+	if (GetCharacterMovement()->IsFalling())
+	{	
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		GetCharacterMovement()->GravityScale = 0.0f;
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	}
-	else if (GetCharacterMovement()->IsFlying()) {
+	else if (GetCharacterMovement()->IsFlying())
+	{
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		GetCharacterMovement()->GravityScale = 1.0f;
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	}
-	else {
+	else if (GetCharacterMovement()->IsSwimming())
+	{
+		GetCharacterMovement()->GravityScale = 0.25f;
+		GetCharacterMovement()->Launch(FVector(0, 0, 60));
+	}
+	else
+	{
 		Jump();
 	}
 }
 
-void ASuperHiroCharacter::FlyUp(float f) {
-	if (GetCharacterMovement()->MovementMode == MOVE_Flying) {
+void ASuperHiroCharacter::FlyUp(float f)
+{
+	if (GetCharacterMovement()->MovementMode == MOVE_Flying)
+	{
 		const FRotator Rotation = GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Z);
@@ -200,10 +233,10 @@ void ASuperHiroCharacter::FlyUp(float f) {
 		// add movement in that direction
 		AddMovementInput(Direction, f);
 	}
-
 }
 
-void ASuperHiroCharacter::LaserEyes() {
+void ASuperHiroCharacter::LaserEyes()
+{
 	float CamRotX = GetActorRotation().Vector().X;
 	float CamRotY = GetActorRotation().Vector().Y;
 	float ControlRot = this->GetControlRotation().Vector().Z;
@@ -216,12 +249,15 @@ void ASuperHiroCharacter::LaserEyes() {
 
 	UWorld* world = GetWorld();
 
-	if (bIsAiming && !bIsAltAiming) {
-		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+	if (bIsAiming && !bIsAltAiming)
+	{
+		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams))
+		{
 			End = Hit->Location;
 
 			AActor* Actor = Hit->GetActor();
-			if (Actor != NULL && !Actor->GetName().Contains("Landscape")) {
+			if (Actor != NULL && !Actor->GetName().Contains("Landscape"))
+			{
 				Actor->Destroy();
 			}
 		}
@@ -232,13 +268,14 @@ void ASuperHiroCharacter::LaserEyes() {
 	delete CQParams;
 }
 
-void ASuperHiroCharacter::TeleThrow() {
-	float CamRotX = GetActorRotation().Vector().X;
+void ASuperHiroCharacter::TeleThrow()
+{	
+	/*float CamRotX = GetCameraRotation().Vector().X;
 	float CamRotY = GetActorRotation().Vector().Y;
-	float ControlRot = this->GetControlRotation().Vector().Z;
-
-	FVector Start = GetActorLocation() + FVector(0, 0, 65);
-	FVector End = (FVector(CamRotX, CamRotY, ControlRot) * 5000.0f) + Start;
+	float ControlRot = this->GetControlRotation().Vector().Z;*/
+	
+	FVector Start = FollowCamera->GetComponentLocation();
+	FVector End = (GetControlRotation().Vector() * 5000.0f) + Start;
 
 	FHitResult* Hit = new FHitResult;
 	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
@@ -246,15 +283,18 @@ void ASuperHiroCharacter::TeleThrow() {
 
 	UWorld* world = GetWorld();
 
-	if (bIsAiming && !bIsAltAiming) {
-		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+	if (bIsAiming && !bIsAltAiming)
+	{
+		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams))
+		{
 			End = Hit->Location;
 
 			AActor* Actor = Hit->GetActor();
 
-			if (Actor != NULL && !Actor->GetName().Contains("Landscape")) {
+			if (Actor != NULL && !Actor->GetName().Contains("Landscape"))
+			{
 				UStaticMeshComponent* SM = Cast<UStaticMeshComponent>(Actor->GetRootComponent());
-				SM->AddImpulse(End * GetActorForwardVector() * 200.0f); // The float determines how hard you throw
+				SM->AddImpulse(End * 50.0f); // The float determines how hard you throw
 			}
 		}
 	}
@@ -264,7 +304,8 @@ void ASuperHiroCharacter::TeleThrow() {
 	delete CQParams;
 }
 
-void ASuperHiroCharacter::LookTrace() {
+void ASuperHiroCharacter::LookTrace()
+{
 	FRotator ControlRot = this->GetActorRotation();
 	FVector Start = GetActorLocation();
 	FVector End = (GetActorRotation().Vector() * 1000.0f) + Start;
@@ -275,11 +316,13 @@ void ASuperHiroCharacter::LookTrace() {
 
 	UWorld* world = GetWorld();
 
-	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams)) {
+	if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams))
+	{
 		End = Hit->Location;
 
 		AActor* Actor = Hit->GetActor();
-		if (!Actor == NULL && !Actor->GetName().Contains("Landscape")) {
+		if (!Actor == NULL && !Actor->GetName().Contains("Landscape"))
+		{
 			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Green, Actor->GetName());
 		}
 	}
