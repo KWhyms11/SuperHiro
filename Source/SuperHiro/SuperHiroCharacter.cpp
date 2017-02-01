@@ -114,14 +114,12 @@ void ASuperHiroCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-	//LookTrace();
 }
 
 void ASuperHiroCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-	//LookTrace();
 }
 
 void ASuperHiroCharacter::MoveForward(float Value)
@@ -197,10 +195,10 @@ void ASuperHiroCharacter::RTAction()
 	}
 }
 
-void ASuperHiroCharacter::FlyJump() 
+void ASuperHiroCharacter::FlyJump()
 {
 	if (GetCharacterMovement()->IsFalling())
-	{	
+	{
 		GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		GetCharacterMovement()->GravityScale = 0.0f;
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -269,11 +267,7 @@ void ASuperHiroCharacter::LaserEyes()
 }
 
 void ASuperHiroCharacter::TeleThrow()
-{	
-	/*float CamRotX = GetCameraRotation().Vector().X;
-	float CamRotY = GetActorRotation().Vector().Y;
-	float ControlRot = this->GetControlRotation().Vector().Z;*/
-	
+{
 	FVector Start = FollowCamera->GetComponentLocation();
 	FVector End = (GetControlRotation().Vector() * 5000.0f) + Start;
 
@@ -283,18 +277,19 @@ void ASuperHiroCharacter::TeleThrow()
 
 	UWorld* world = GetWorld();
 
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FollowCamera->GetForwardVector().ToString());
 	if (bIsAiming && !bIsAltAiming)
 	{
 		if (world->LineTraceSingleByChannel(*Hit, Start, End, ECC_Camera, *CQParams, *CRParams))
 		{
-			End = Hit->Location;
+			FVector HitLocation = Hit->Location;
 
 			AActor* Actor = Hit->GetActor();
 
 			if (Actor != NULL && !Actor->GetName().Contains("Landscape"))
 			{
 				UStaticMeshComponent* SM = Cast<UStaticMeshComponent>(Actor->GetRootComponent());
-				SM->AddImpulse(End * 50.0f); // The float determines how hard you throw
+				SM->AddImpulse(End * 100.0f); // The float determines how hard you throw
 			}
 		}
 	}
@@ -304,11 +299,10 @@ void ASuperHiroCharacter::TeleThrow()
 	delete CQParams;
 }
 
-void ASuperHiroCharacter::LookTrace()
+bool ASuperHiroCharacter::LookTrace()
 {
-	FRotator ControlRot = this->GetActorRotation();
-	FVector Start = GetActorLocation();
-	FVector End = (GetActorRotation().Vector() * 1000.0f) + Start;
+	FVector Start = FollowCamera->GetComponentLocation();
+	FVector End = (GetActorRotation().Vector() * 5000.0f) + Start;
 
 	FHitResult* Hit = new FHitResult;
 	FCollisionQueryParams* CQParams = new FCollisionQueryParams(FName(TEXT("MyTrace")), true, this);
@@ -321,13 +315,10 @@ void ASuperHiroCharacter::LookTrace()
 		End = Hit->Location;
 
 		AActor* Actor = Hit->GetActor();
-		if (!Actor == NULL && !Actor->GetName().Contains("Landscape"))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, -1, FColor::Green, Actor->GetName());
-		}
+		delete Hit;
+		delete CRParams;
+		delete CQParams;
+		return Actor != NULL && !Actor->GetName().Contains("Landscape");
 	}
-
-	delete Hit;
-	delete CRParams;
-	delete CQParams;
+	return false;
 }

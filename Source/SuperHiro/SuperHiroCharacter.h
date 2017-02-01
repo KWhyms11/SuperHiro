@@ -19,6 +19,8 @@ class ASuperHiroCharacter : public ACharacter
 public:
 	ASuperHiroCharacter();
 
+	bool LookTrace();
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -71,8 +73,6 @@ protected:
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
-	void LookTrace();
 
 	void FlyJump();
 
